@@ -13,12 +13,11 @@ public class ReadFile
 	private File input;
 	
 	private ArrayList<String[]> raw;
-	private String[] StudentNames;
-	private int[] RawMultipleChoice;
-	private int[] RawFreeResponse;
 	private String date;
 	private int testType;
 	private int totalNumber;
+	
+	private ArrayList<Student> students;
 	
 	public static final int[] MAX_MC = {39, 20, 15};
 	public static final int[] MAX_FR = {45, 25, 15};
@@ -70,9 +69,7 @@ public class ReadFile
 	public void parse() throws IllegalArgumentException
 	{
 		
-		StudentNames = new String[raw.size() - 5];
-		RawMultipleChoice = new int[raw.size() - 5];
-		RawFreeResponse = new int[raw.size() - 5];
+		students = new ArrayList<Student>();
 		
 		//get date
 		date = raw.get(0)[1];
@@ -99,41 +96,41 @@ public class ReadFile
 	    for(int i = 0; i < raw.size() - 5; i++) 
 	    { 
 	    	
-	        StudentNames[i] = raw.get(i+5)[0]; 
-	        RawMultipleChoice[i] = Integer.parseInt(raw.get(i+5)[1]); 
-	        RawFreeResponse[i] = Integer.parseInt(raw.get(i+5)[2]); 
+	        String name = raw.get(i+5)[0]; 
+	        int MC = Integer.parseInt(raw.get(i+5)[1]); 
+	        int FR = Integer.parseInt(raw.get(i+5)[2]); 
+	        
+	        students.add(new Student(name, MC, FR));
 	         
 	    } 
 	    
-	    //check multiple choice scores
-	    for(int i = 0; i < RawMultipleChoice.length; i++)
+	    //check multiple choice and free response scores
+	    for(int i = 0; i < students.size(); i++)
 	    {
 	    	
-	    	if(RawMultipleChoice[i] > totalNumber)
+	    	int mc = students.get(i).getRawMCScore();
+	    	int fr = students.get(i).getRawFRScore();
+	    	
+	    	if(mc > totalNumber)
 	    	{
-	    		throw new IllegalArgumentException(StudentNames[i] + " has an MC score larger than the total Number of MC!");
+	    		throw new IllegalArgumentException(students.get(i).getName() + " has an MC score larger than the total Number of MC!");
 	    	}
 	    	
-	    	if(RawMultipleChoice[i] <= 0)
+	    	else if(mc <= 0)
 	    	{
-	    		throw new IllegalArgumentException(StudentNames[i] + " has an MC score less than or equal to 0!");
+	    		throw new IllegalArgumentException(students.get(i).getName() + " has an MC score less than or equal to 0!");
 	    	}
 	    	
-	    }
-	    
-	    //check free response scores
-	    for(int i = 0; i < RawFreeResponse.length; i++)
-	    {
-	    	
-	    	if(RawFreeResponse[i] > MAX_FR[testType])
+	    	if(fr > MAX_FR[testType])
 	    	{
 	    		throw new IllegalArgumentException("Student at index " + (i+6) + " has an FR score greater than the maximum!");
 	    	}
 	    	
-	    	else if(RawFreeResponse[i] < 0)
+	    	else if(fr < 0)
 	    	{
 	    		throw new IllegalArgumentException("Student at index " + (i+6) + " has an FR score less than 0!");
 	    	}
+	    	
 	    }
 	    
 	}
@@ -143,19 +140,9 @@ public class ReadFile
 		return raw;
 	}
 	
-	public String[] getStudentNames()
+	public ArrayList<Student> getStudentList()
 	{
-		return StudentNames;
-	}
-	
-	public int[] getRawMCScores()
-	{
-		return RawMultipleChoice;
-	}
-	
-	public int[] getRawFreeResponseScores()
-	{
-		return RawFreeResponse;
+		return students;
 	}
 	
 	public String getDate()

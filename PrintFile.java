@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
 import java.text.NumberFormat;
+import java.util.ArrayList;
 
 import javax.swing.JOptionPane;
 
@@ -16,8 +17,7 @@ public class PrintFile
 {
 	
 	private String path;
-	
-	private static final int[] numberOfMCScaled = {50, 25, 15};
+
 	
 	public PrintFile(String filePath)
 	{
@@ -50,7 +50,7 @@ public class PrintFile
 		
 	}
 	
-	public void printPDF(ScoreCalculator scores, ReadFile raw)
+	public void printPDF(ArrayList<Student> studentList, ReadFile raw, double MCScaler)
 	{
 		
 		try
@@ -64,34 +64,33 @@ public class PrintFile
 					
 			doc.open();
 			
-			for(int i = 0; i < raw.getStudentNames().length; i++)
+			for(int i = 0; i < studentList.size(); i++)
 			{
 				
 				doc.add(new Paragraph("Date: " + raw.getDate()));
 				
 				doc.add(new Paragraph(" "));
 				
-				
-				doc.add(new Paragraph("Name: " + raw.getStudentNames()[i]));
+				doc.add(new Paragraph("Name: " + studentList.get(i).getName()));
 				
 				doc.add(new Paragraph(" "));
 				
-				doc.add(new Paragraph("Multiple Choice Score: " + raw.getRawMCScores()[i] 
+				doc.add(new Paragraph("Multiple Choice Score: " + studentList.get(i).getRawMCScore() 
 						+ " / " + raw.getNumberOfMultipleChoice() ));
-				doc.add(new Paragraph("Free Response Score: " + raw.getRawFreeResponseScores()[i] 
+				doc.add(new Paragraph("Free Response Score: " + studentList.get(i).getRawFRScore() 
 						+ " / " + ReadFile.MAX_FR[raw.getTestType()]));
 				
 				doc.add(new Paragraph(" "));
 				
-				doc.add(new Paragraph("Scaled Multiple Choice Score: " + raw.getRawMCScores()[i] + " * "
-										+ format.format(scores.getMCScaler()) + " = " 
-										+ format.format(scores.getScaledMC()[i])
-										+ " / " + numberOfMCScaled[raw.getTestType()]));
+				doc.add(new Paragraph("Scaled Multiple Choice Score: " + studentList.get(i).getRawMCScore() + " * "
+										+ format.format(MCScaler) + " = " 
+										+ format.format(studentList.get(i).getScaledMCScore())
+										+ " / " + Scale.numberOfMCScaled[raw.getTestType()]));
 				
-				doc.add(new Paragraph("Scaled Free Response Score: " + raw.getRawFreeResponseScores()[i] + " * "
-										+ format.format(scores.FREE_RESPONSE_SCALER[raw.getTestType()]) + " = " 
-										+ format.format(scores.getScaledFR()[i]) + " / " 
-										+ numberOfMCScaled[raw.getTestType()]));
+				doc.add(new Paragraph("Scaled Free Response Score: " + studentList.get(i).getRawFRScore() + " * "
+										+ format.format(Scale.FREE_RESPONSE_SCALER[raw.getTestType()]) + " = " 
+										+ format.format(studentList.get(i).getScaledFRScore()) + " / " 
+										+ Scale.numberOfMCScaled[raw.getTestType()]));
 				
 				
 				
@@ -100,17 +99,21 @@ public class PrintFile
 				switch(raw.getTestType())
 				{
 					case 0:
+						doc.add(new Paragraph("Uncurved Score: " + format.format(studentList.get(i).getUncurvedScore()) 
+												+ " / " + 100));
+						break;
+						
 					case 1:
 						
-						doc.add(new Paragraph("Uncurved Score: " + format.format(scores.getUncurvedPercentages()[i] * 2) 
+						doc.add(new Paragraph("Uncurved Score: " + format.format(studentList.get(i).getUncurvedScore() * 2) 
 												+ " / " + 100));
 						
 						break;
 					
 					case 2:
 						
-						doc.add(new Paragraph("Uncurved Score: " + format.format(scores.getUncurvedPercentages()) 
-												+ " * 2 = " + format.format(scores.getUncurvedPercentages()[i] * 2) 
+						doc.add(new Paragraph("Uncurved Score: " + format.format(studentList.get(i).getUncurvedScore()) 
+												+ " * 2 = " + format.format(studentList.get(i).getUncurvedScore() * 2) 
 												+ " / " + 60));
 						
 						break;
@@ -122,9 +125,9 @@ public class PrintFile
 				if(raw.getTestType() == 2)
 				{
 					
-					if(scores.getUncurvedPercentages()[i] > 0)
+					if(studentList.get(i).getUncurvedScore() > 0)
 					{
-						doc.add(new Paragraph("Curved Score: " + format.format((scores.getCurvedPercentages()[i] / 30) * 100) 
+						doc.add(new Paragraph("Curved Score: " + format.format((studentList.get(i).getCurvedScore() / 30) * 100) 
 								   + " / " + 100));
 					}
 					
@@ -137,21 +140,22 @@ public class PrintFile
 				
 				else
 				{
-					if(scores.getCurvedPercentages()[i] > 0)
+					if(studentList.get(i).getCurvedScore() > 0)
 					{
-						doc.add(new Paragraph("Curved Score: " + format.format(scores.getCurvedPercentages()[i]) 
+						System.out.println(studentList.get(i).getCurvedScore());
+						doc.add(new Paragraph("Curved Score: " + format.format(studentList.get(i).getCurvedScore()) 
 												+ " / " + 100));
 					}
 					
 					else
 					{
+						System.out.println(studentList.get(i).getCurvedScore());
 						doc.add(new Paragraph("Curved Score: " + "               " + " / " + 100));
 					}
 				}
 			
 				if( (i + 1) % 3 == 0 && i > 0)
 				{
-					
 					doc.newPage();
 				}
 				

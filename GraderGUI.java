@@ -15,8 +15,8 @@ import javax.swing.JSplitPane;
 public class GraderGUI implements ActionListener
 {
 	
-	public static final String VERSION_NUMBER = "v1.3";
-	private static final Dimension WINDOW_SIZE = new Dimension(750, 500);
+	public static final String VERSION_NUMBER = "v1.31";
+	public static final Dimension WINDOW_SIZE = new Dimension(750, 500);
 	
 	private JFrame frame;
 	private JSplitPane split;
@@ -52,7 +52,7 @@ public class GraderGUI implements ActionListener
 		//Initialization of the buttons
 		calculate = new JButton("Load and Calculate File");
 		regenerate = new JButton("Generate Template File");
-		close = new JButton("Close");
+		close = new JButton("Exit");
 		
 		//Add action listeners
 		calculate.addActionListener(this);
@@ -141,8 +141,9 @@ public class GraderGUI implements ActionListener
 						try
 						{
 							raw.parse();
-							score = new ScoreCalculator(raw.getRawMCScores(), raw.getRawFreeResponseScores()
+							score = new ScoreCalculator(raw.getStudentList()
 									, raw.getTestType(), raw.getNumberOfMultipleChoice());
+							score.calculate();
 	
 							//Get save path for output file
 							chooser = new JFileChooser();
@@ -205,7 +206,7 @@ public class GraderGUI implements ActionListener
 				{
 					
 					PrintFile p = new PrintFile(chooser.getSelectedFile().getAbsolutePath());
-					p.printPDF(score, raw);
+					p.printPDF(score.getStudentList(), raw, score.getMCScaler());
 					
 					JOptionPane.showMessageDialog(frame, "Calculation complete!");
 					
